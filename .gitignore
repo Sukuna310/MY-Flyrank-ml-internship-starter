@@ -27,6 +27,10 @@ outputs/*.csv
 # your experiments live in work/; datasets never enter git
 work/**/*.csv
 
+# --- Knowledge graph (graphify) --------------------------------------------
+# persistent local knowledge graph; regenerated with /graphify --update
+graphify-out/
+
 # --- Python / notebooks ----------------------------------------------------
 __pycache__/
 *.py[cod]

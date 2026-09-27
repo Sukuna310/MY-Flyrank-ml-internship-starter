@@ -1,0 +1,70 @@
+{
+  "base_rate": 0.4438,
+  "grouped_auc": 0.5902,
+  "grouped_p_at_50": 0.48,
+  "grouped_p_at_50_random_ranking": 0.408,
+  "random_auc": 0.6262,
+  "random_p_at_50": 0.56,
+  "random_p_at_50_random_ranking": 0.4333,
+  "rule_p_at_50": 0.436,
+  "n_labeled": 77400,
+  "n_frame_rows": 151981,
+  "n_clients": 38,
+  "decision_date": "2026-03-15",
+  "feature_window": "2026-03-01..2026-03-15",
+  "outcome_window": "2026-03-16..2026-03-31",
+  "model_type": "LogisticRegression(max_iter=500, C=1.0), no scaler, 5 features",
+  "n_features": 5,
+  "split": "GroupKFold(5) by client_hash_id; random row split quoted for contrast only",
+  "queue_score": "predicted_probability from a full-frame fit - in-sample, ranking quality only ever quoted out-of-fold",
+  "standardized_coefficients_grouped_fold": {
+    "f_active_days": 0.6803,
+    "f_ctr": -0.2782,
+    "f_log_age_days": -0.2028,
+    "f_avg_position": 0.1199,
+    "f_log_impressions": 0.0526
+  },
+  "permutation_importance_grouped_fold": {
+    "f_ctr": 0.0602,
+    "f_active_days": 0.0596,
+    "f_log_age_days": 0.0399,
+    "f_avg_position": 0.001,
+    "f_log_impressions": -0.003
+  },
+  "permutation_sd_grouped_fold": {
+    "f_ctr": 0.0026,
+    "f_active_days": 0.0015,
+    "f_log_age_days": 0.0016,
+    "f_avg_position": 0.0017,
+    "f_log_impressions": 0.001
+  },
+  "permutation_importance_note": "f_ctr 0.0602 +/- 0.0026 and f_active_days 0.0596 +/- 0.0015 overlap within one SD, so the two are tied rather than ranked; f_avg_position 0.0010 +/- 0.0017 is indistinguishable from zero",
+  "reason_code_counts": {
+    "low_ctr_more_decline": 38695,
+    "high_volume_tilt": 16562,
+    "no_measured_pattern": 10462,
+    "poor_position_drift": 9978,
+    "low_activity_concentration": 1703
+  },
+  "reason_code_decline_rate": {
+    "high_volume_tilt": 0.3855,
+    "low_activity_concentration": 0.094,
+    "low_ctr_more_decline": 0.5072,
+    "no_measured_pattern": 0.4336,
+    "poor_position_drift": 0.3649
+  },
+  "unsupported_codes": [
+    "stale_high_traffic (age quartiles non-monotonic, oldest declines least 0.3707; f_log_age_days coef -0.2028) - assigned to 0 pages",
+    "low_activity_concentration as a DECLINE reason - f_active_days coef is +0.6803 (positive: more active days -> more decline); pages active <=10 days decline 0.1251 vs 0.4948 for 15/15 days, lift -0.3187. Kept as a monitor-only code; 79.2% of labeled pages sit at 15/15 active days, so a rank-based bottom-third cut fired on fully-active pages and was replaced by an absolute <=10 cut."
+  ],
+  "no_refresh_action_assigned": "no pattern's measured lift over the base rate (best +0.0634) justifies telling an editor to change a page; every action in the queue is a look",
+  "caveats": [
+    "label is a within-month second-half vs first-half proxy, not future decline",
+    "labeled population is pages with >=100 first-half impressions - high-traffic only",
+    "38 clients, uneven (median 485 rows, max 17,610)",
+    "grouped AUC 0.5902 is modest; model does not separate from the Week-4 rule at P@50",
+    "no time-aware split exists; one decision date only",
+    "decision-support triage order only - see the no-go list in section 3"
+  ],
+  "source_notebook": "work/notebooks/w06_validation_audit.ipynb"
+}

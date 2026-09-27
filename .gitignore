@@ -27,6 +27,10 @@ outputs/*.csv
 # your experiments live in work/; datasets never enter git
 work/**/*.csv
 
+# graphify cannot read .ipynb, so notebooks are mirrored to markdown sidecars
+# by scripts/nb_to_markdown.py; regenerate, never commit
+work/notebooks_md/
+
 # --- Knowledge graph (graphify) --------------------------------------------
 # persistent local knowledge graph; regenerated with /graphify --update
 graphify-out/

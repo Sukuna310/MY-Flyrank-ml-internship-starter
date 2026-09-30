@@ -31,9 +31,10 @@ work/**/*.csv
 # by scripts/nb_to_markdown.py; regenerate, never commit
 work/notebooks_md/
 
-# --- Knowledge graph (graphify) --------------------------------------------
-# persistent local knowledge graph; regenerated with /graphify --update
-graphify-out/
+# --- Knowledge Base (KB) ---------------------------------------------------
+# Playlist notes and reference materials — tracked manually
+# KB/
+KB/*.md
 
 # --- Python / notebooks ----------------------------------------------------
 __pycache__/

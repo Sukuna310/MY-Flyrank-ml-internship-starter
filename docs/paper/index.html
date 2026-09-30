@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ranked Refresh Queue for Search Visibility Loss — A Machine Learning Decision-Support Tool</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --text: #1a1a1a;
+    --muted: #666;
+    --border: #e0e0e0;
+    --accent: #2563eb;
+    --accent-light: #eff6ff;
+    --code-bg: #f5f5f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117;
+      --text: #c9d1d9;
+      --muted: #8b949e;
+      --border: #30363d;
+      --accent: #58a6ff;
+      --accent-light: #1f2937;
+      --code-bg: #161b22;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    max-width: 48rem;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+  }
+  h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 2px solid var(--border);
+  }
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  p { margin-bottom: 1rem; }
+  .meta {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .abstract {
+    background: var(--accent-light);
+    border-left: 4px solid var(--accent);
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+    font-size: 1rem;
+  }
+  .abstract p { margin-bottom: 0.5rem; }
+  .abstract p:last-child { margin-bottom: 0; }
+  .abstract-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.95rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-weight: 600;
+    background: var(--code-bg);
+  }
+  tr:last-child td { border-bottom: none; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  figure {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+  }
+  figure img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+  figcaption {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+    text-align: center;
+  }
+  .caption-strong { color: var(--text); font-weight: 500; }
+  ul, ol { margin: 0.75rem 0 1rem 1.5rem; }
+  li { margin-bottom: 0.4rem; }
+  code {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--code-bg);
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  .recommendations li { margin-bottom: 0.75rem; }
+  .recommendations strong { color: var(--accent); }
+  .footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .footer a { color: var(--accent); }
+  .toc {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    font-size: 0.95rem;
+  }
+  .toc ol { margin: 0.5rem 0 0 1.25rem; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .claim-box {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    font-size: 0.95rem;
+  }
+  .claim-box strong { color: var(--accent); }
+  @media (max-width: 480px) {
+    body { padding: 1rem; }
+    h1 { font-size: 1.4rem; }
+    h2 { font-size: 1.15rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Ranked Refresh Queue for Search Visibility Loss: A Machine Learning Decision-Support Tool</h1>
+
+<div class="meta">
+  Capstone research paper · FlyRank ML Internship, July 2026 Cohort<br>
+  Growth / Recovery / Momentum lane · Published 2026-09-30
+</div>
+
+<div class="abstract">
+  <div class="abstract-label">Abstract</div>
+  <p><strong>Question:</strong> Of the thousands of pages an editor must review each cycle, which ones deserve the first look?</p>
+  <p><strong>Data:</strong> 9,841,378 daily Search Console observations from March 2026 across 38 pseudonymized clients, rolled up to 151,981 page-level feature rows and labeled down to 77,400 pages with 100+ first-half impressions.</p>
+  <p><strong>Method:</strong> Five features computed over the first half of March (log impressions, CTR, average position, active days, log age), logistic regression with no scaler, validated with GroupKFold(5) grouped by client so no client leaks across the split. Label: did the page lose impressions in the second half of March — a within-month proxy, not a forecast.</p>
+  <p><strong>Result:</strong> Grouped AUC 0.5902 vs 0.5000 random; P@50 0.4800 vs 0.4080 random. The model clears random ranking modestly but does <em>not</em> separate from the hand-written Week-4 rule at P@50 0.4360. One finding holds: pages below median CTR decline at 0.5072 vs 0.3804 above it. The "old pages decay more" heuristic runs backwards — the oldest quartile declines <em>least</em>, at 0.3707.</p>
+  <p><strong>What it's for:</strong> A reading order for a human reviewer, not an automation. Nothing in the shipped queue is a refresh decision; every action is a look.</p>
+</div>
+
+<nav class="toc">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#intro">Introduction / Problem statement</a></li>
+    <li><a href="#data">Data</a></li>
+    <li><a href="#method">Methodology</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#limits">Limitations &amp; honest framing</a></li>
+    <li><a href="#recs">Ranked recommendations</a></li>
+    <li><a href="#repro">Reproducibility</a></li>
+    <li><a href="#ack">Acknowledgments &amp; data credit</a></li>
+  </ol>
+</nav>
+
+<h2 id="intro">1. Introduction / Problem statement</h2>
+
+<p>A content team owns thousands of pages per client. One editor gets through a handful per cycle. The team already had Search Console data — impressions, clicks, average position, active days — sitting in spreadsheets.</p>
+
+<p>What they did not have was an <em>order</em>. Every queue I had seen was either a spreadsheet sorted by impressions descending, which puts the biggest pages on top whether or not anything is wrong with them, or an editorial judgment call that nobody could write down and nobody could check later.</p>
+
+<p>So the question was narrow: <strong>of the pages this editor has to look at anyway, which ones deserve the look first?</strong></p>
+
+<p>This is a decision-support problem, not an automation problem. The editor still reads the page. The model's job is to reduce the time before the first meaningful look.</p>
+
+<h2 id="data">2. Data</h2>
+
+<h3>Source and size</h3>
+
+<p>All data comes from the FlyRank ML Internship warehouse release, mid-panel month <code>month=2026-03</code>, hosted as Parquet on Hugging Face (gated; access walkthrough in the notebook). The slice lives inside the snapshot's known-good range (2025-01-27 → 2026-06-30).</p>
+
+<table>
+  <tr><th>Table</th><th>Grain</th><th>Rows in slice</th></tr>
+  <tr><td><code>fact_content_daily_performance</code></td><td>report_date × client_hash_id × content_hash_id</td><td class="num">9,841,378</td></tr>
+  <tr><td><code>dim_content</code></td><td>one row per content item</td><td class="num">331,437</td></tr>
+  <tr><td><code>dim_clients</code></td><td>one row per pseudonymized client</td><td class="num">104</td></tr>
+</table>
+
+<h3>Time windows</h3>
+
+<table>
+  <tr><th>Window</th><th>Dates</th><th>Use</th></tr>
+  <tr><td>Feature window</td><td>2026-03-01 → 2026-03-15</td><td>Compute the five features</td></tr>
+  <tr><td>Outcome window</td><td>2026-03-16 → 2026-03-31</td><td>Label only — never a feature</td></tr>
+  <tr><td>Decision date</td><td>2026-03-15</td><td>Features must be knowable here</td></tr>
+</table>
+
+<h3>What one row means</h3>
+
+<p>In the fact table, one row = one Search Console observation for one page in one client's account on one calendar day. When I build features to rank pages, I roll those daily rows up to <strong>one row per page at the decision date</strong> — the editor gets a ranked queue of pages, not of days.</p>
+
+<h3>Label</h3>
+
+<p><code>is_visibility_loss = 1</code> when a page's second-half March impressions are below its first-half impressions, computed only for pages with ≥ 100 first-half impressions. This is an honest <strong>within-month proxy</strong> for "this page is losing search visibility" — it is measured from the outcome window, which is never a feature. The label is a proxy, not a forecast of future decline, and I say so everywhere it appears.</p>
+
+<h3>Filtering and exclusion</h3>
+
+<ul>
+  <li><strong>Volume floor:</strong> pages with fewer than 100 first-half impressions are excluded from the label. This leaves 77,400 labeled pages out of 151,981 rows in the feature frame — 50.9% of the frame. This is a high-traffic queue. I did not solve the problem for thin pages, and I am not going to pretend the demo covers them.</li>
+  <li><strong>GSC availability:</strong> only rows where <code>gsc_data_available IS TRUE</code> are used. 3,611,061 of 9,841,378 month rows survive this filter. GA4 rows carry a three-valued availability flag (TRUE / FALSE / NULL) with zero-filled early history — mixing a second, messier measurement system into this contract buys noise, not signal, so GA4 columns are excluded.</li>
+  <li><strong>Product flags:</strong> <code>health_score</code>, <code>priority_score</code>, and similar product-internal flags are deliberately absent from this dataset. I must not rebuild them as features.</li>
+  <li><strong>IDs:</strong> <code>client_hash_id</code> and <code>content_hash_id</code> are pseudonyms. They are used for grouping and for the client-holdout split only — never as features.</li>
+</ul>
+
+<h3>Coverage caveat</h3>
+
+<p>Per-client GSC history does not start together. Of 104 clients in the dimension table, 37 have no <code>gsc_data_start</code>, and only 52 cover all of March 2026. Equal calendar windows do not mean equal history depth. The 38 clients contributing labeled pages are a subset, with a median of 485 labeled rows per client and a maximum of 17,610.</p>
+
+<h2 id="method">3. Methodology</h2>
+
+<h3>Features</h3>
+
+<p>Five features, each knowable at the decision moment. No scaler. No feature engineering beyond the definitions below.</p>
+
+<table>
+  <tr><th>Feature</th><th>Definition (feature window only)</th><th>Available when?</th></tr>
+  <tr><td><code>f_log_impressions</code></td><td>ln(1 + first-half GSC impressions)</td><td>Every input row was delivered by the daily sync on or before 2026-03-15</td></tr>
+  <tr><td><code>f_ctr</code></td><td>first-half clicks ÷ first-half impressions</td><td>Clicks arrive in the same daily sync as impressions, all dated ≤ 2026-03-15</td></tr>
+  <tr><td><code>f_avg_position</code></td><td>mean GSC position over impression-days in the first half</td><td>Averaged only on dates ≤ 2026-03-15</td></tr>
+  <tr><td><code>f_active_days</code></td><td>number of distinct first-half days with ≥ 1 impression</td><td>The 15-day window is already complete at the decision</td></tr>
+  <tr><td><code>f_log_age_days</code></td><td>ln(1 + days between page creation and 2026-03-15)</td><td>Page creation date is static metadata known before any March data</td></tr>
+</table>
+
+<h3>Model</h3>
+
+<p>Logistic regression: <code>LogisticRegression(max_iter=500, C=1.0)</code>, no scaler, fitted on all 77,400 labeled rows. I chose a readable linear model before reaching for anything more flexible — the queue is a decision-support tool for one person with a short list, and interpretability matters more than marginal AUC gains that I could not validate honestly anyway.</p>
+
+<div class="claim-box">
+  <strong>Important:</strong> The full-frame fit ranks rows the model has already seen, so <em>the score itself is not an out-of-fold number</em>. I quote no in-sample AUC for it anywhere. The only validated numbers are the out-of-fold ones from the grouped split below.
+</div>
+
+<h3>Validation design</h3>
+
+<p><strong>GroupKFold(5) grouped by <code>client_hash_id</code>.</strong> No client sits in both train and test. This mattered more than I expected: the same model on a random row split scores AUC 0.6262, and grouping gives 0.036 of that back, which turns out to be client memorization rather than generalization. One grouped fold lands at 0.4666, below chance. I quote the grouped number everywhere and I would push back on anyone quoting the other one.</p>
+
+<table>
+  <tr><th>Design</th><th>AUC</th><th>Notes</th></tr>
+  <tr><td>Grouped (client-holdout)</td><td class="num">0.5902</td><td>Folds 0.4666 to 0.6547, SD 0.0646 — the number I quote</td></tr>
+  <tr><td>Random row split</td><td class="num">0.6262</td><td>Contrast only; 0.036 of it is client memorization — not a result</td></tr>
+</table>
+
+<h3>Leakage checks</h3>
+
+<p>I ran a deliberate leak test. I added one feature that should never be allowed — <code>ln(1 + second-half impressions)</code>, literally the outcome window's defining quantity — and watched a quick 3-fold score jump to 1.0. Then I deleted it and the honest number (0.6262) came back. The bad run stays in the leakage section; the clean run is the result. A checklist can say "no leakage" even when the check is weak. A test that reacts to a known bad field gives more evidence that the boundary is working.</p>
+
+<h3>Baseline</h3>
+
+<p>The Week-4 rule: a hand-written heuristic built before any model, using the same grouped folds. It fits nothing — it is a fixed ordering rule. Its P@50 on the grouped folds is 0.4360, with per-fold values swinging from 0.20 to 0.58.</p>
+
+<h2 id="results">4. Results</h2>
+
+<div class="claim-box">
+  <strong>Comparison contract:</strong> The model and the baseline use the same eligible rows (77,400 labeled pages), the same client folds (GroupKFold 5), the same metric (P@50 and AUC), the same review depth, and the same tie rule. The base rate is shown next to both. Every number below comes from one locked comparison.
+</div>
+
+<h3>Headline numbers</h3>
+
+<table>
+  <tr><th>Method</th><th>Grouped AUC</th><th>Grouped P@50</th><th>vs random</th></tr>
+  <tr><td>Random ranking</td><td class="num">0.5000</td><td class="num">0.4080</td><td>—</td></tr>
+  <tr><td>Week-4 rule (baseline)</td><td class="num">—</td><td class="num">0.4360</td><td>+0.0280</td></tr>
+  <tr><td>Logistic regression (model)</td><td class="num">0.5902</td><td class="num">0.4800</td><td>+0.0720</td></tr>
+  <tr><td>Model − Rule</td><td class="num">—</td><td class="num">+0.0440</td><td>inside rule's fold noise</td></tr>
+</table>
+
+<p>The model clears random ranking on both AUC and P@50. It does <strong>not</strong> beat the Week-4 rule — the gap of 0.0440 on P@50 sits inside the rule's own fold-to-fold spread of 0.38. I am calling them unseparated, not claiming a win. A 0.0440 difference on a metric whose baseline moves 0.38 between folds is not a result.</p>
+
+<h3>The chart</h3>
+
+<figure>
+  <img src="figures/queue_decline_profile.png" alt="Decline rate by score decile with base rate reference line">
+  <figcaption><strong>Figure 1.</strong> Decline rate by score decile, in-sample, with the base rate of 0.4438 drawn as a dashed reference line. Decile 1 sits at 0.1848; decile 10 at 0.5567. The ordering does most of its work in the first two deciles and then coasts. <span class="caption-strong">These bars are in-sample — a consistency check on the ordering, not evidence about predictive power.</span> The out-of-fold top-decile decline rate is 0.5195 against a base rate of 0.4438, a lift of 0.0757 — that is the number to use.</figcaption>
+</figure>
+
+<h3>What held: the CTR split</h3>
+
+<p>Split the labeled set at the median CTR of 0.00135. Below the median, decline runs at 0.5072. Above it, 0.3804. That is a 0.1268 gap on 77,400 rows, and <code>low_ctr_more_decline</code> is the only one of the five reason codes whose assigned group finishes above the base rate.</p>
+
+<h3>What did not: the age story</h3>
+
+<p>I started from a reasonable-sounding assumption that old pages decay more. The oldest quartile declines at 0.3707, which is the <em>lowest</em> of the four quartiles, below the newest at 0.4074 and below the base rate of 0.4438. The pattern is not monotone anywhere — it peaks in the second quartile at 0.5458. I killed the <code>stale_high_traffic</code> reason code and assigned it to zero pages, because a heuristic that runs backwards in the data is worse than no heuristic at all.</p>
+
+<h3>Feature importance</h3>
+
+<p>On permutation importance, <code>f_ctr</code> is 0.0602 and <code>f_active_days</code> is 0.0596, with standard deviations of 0.0026 and 0.0015. They overlap within one SD, so they are tied, and ranking one above the other would be overclaiming. <code>f_avg_position</code> at 0.0010 is indistinguishable from zero. The claim I can defend is that low CTR is the only reason code with a measured lift — not that it is the strongest lever in the model.</p>
+
+<h3>Queue preview</h3>
+
+<table>
+  <tr><th>Rank</th><th>Score</th><th>Probability</th><th>Primary reason code</th><th>Action</th><th>Impressions</th><th>CTR</th></tr>
+  <tr><td class="num">1</td><td class="num">81.6</td><td class="num">0.782</td><td>low_ctr_more_decline</td><td>ctr_review</td><td class="num">12,834</td><td class="num">0.05</td></tr>
+  <tr><td class="num">2</td><td class="num">81.4</td><td class="num">0.788</td><td>low_ctr_more_decline</td><td>ctr_review</td><td class="num">8,064</td><td class="num">0.07</td></tr>
+  <tr><td class="num">3</td><td class="num">81.4</td><td class="num">0.847</td><td>low_ctr_more_decline</td><td>ctr_review</td><td class="num">2,498</td><td class="num">0.00</td></tr>
+  <tr><td class="num">4</td><td class="num">81.0</td><td class="num">0.774</td><td>low_ctr_more_decline</td><td>ctr_review</td><td class="num">13,790</td><td class="num">0.12</td></tr>
+  <tr><td class="num">5</td><td class="num">80.9</td><td class="num">0.815</td><td>low_ctr_more_decline</td><td>ctr_review</td><td class="num">3,393</td><td class="num">0.09</td></tr>
+</table>
+
+<p><em>Top 5 of the ranked queue. Full queue of 77,400 rows is in the reproducibility section. Scores are full-frame fit probabilities — in-sample, not out-of-fold.</em></p>
+
+<h2 id="limits">5. Limitations &amp; honest framing</h2>
+
+<ul>
+  <li><strong>The label is a within-March proxy, not a true future-window label.</strong> <code>is_visibility_loss</code> compares the second half of March to the first half — it is measured, not predicted, and it says nothing yet about whether today's features predict next month's decline. The capstone label must be built as prior window → future window and validated with time-aware splits.</li>
+  <li><strong>One month, one decision date.</strong> March 2026 only. Seasonal effects, platform changes, and client-specific events in that month are baked in and unmeasured.</li>
+  <li><strong>High-traffic pages only.</strong> The 100-impression floor excludes thin pages. 49.1% of the feature frame does not earn a label, and I make no claim about them.</li>
+  <li><strong>38 clients.</strong> The labeled set covers 38 of 104 clients in the dimension table, unevenly sized. The grouped split protects against client memorization but does not make the sample representative of all clients.</li>
+  <li><strong>In-sample scores.</strong> The queue scores are full-frame fit probabilities. They are a sorting device whose ranking quality is known to be modest (grouped AUC 0.5902). I quote no in-sample AUC for them.</li>
+  <li><strong>Model does not beat the rule.</strong> The 0.0440 P@50 gap is inside the rule's fold noise. The honest headline is that the model and the rule are unseparated.</li>
+  <li><strong>Close to a single-signal queue.</strong> After the priority contest, only <code>low_ctr_more_decline</code> files a group above the base rate. The reason column stays — each code names a real measured pattern — but it should not be read as five independent findings.</li>
+  <li><strong>Impressions are the only signal.</strong> The label is defined on impressions. A page that loses impressions but holds clicks, or vice versa, is not captured by this proxy.</li>
+</ul>
+
+<p>I use careful words throughout: <em>observed</em>, <em>measured</em>, <em>directional</em>, <em>decision-support</em>. The model is a reading order. A person still reads the page.</p>
+
+<h2 id="recs">6. Ranked recommendations</h2>
+
+<p>The audience for this section is one person: an editor opening a queue on the morning of a decision date and asking "which pages do I look at first, and why?" This is decision-support. It is not an automation, and nowhere in this queue does an action become a refresh decision.</p>
+
+<ol class="recommendations">
+  <li><strong>Look at low-CTR pages first.</strong> Pages below the median CTR of 0.00135 decline at 0.5072 vs 0.3804 above it — the only measured lift any pattern shows over the 0.4438 base rate. The action is a look at intent match and whether the page still answers the query it targets. <em>Do not automate a refresh based on this.</em></li>
+
+  <li><strong>Do not trust the "old page" heuristic.</strong> The oldest quartile declines least (0.3707). Age is not a measured decline signal in this slice. Staleness is a real editorial reason to look at a page, but it is not what this label measures, and putting it in the reason column would borrow credibility the number does not have.</li>
+
+  <li><strong>Treat the queue as a sort, not a score.</strong> The full-frame fit probabilities are in-sample. The only validated number is grouped AUC 0.5902, which is modest. The editor gets an order; the probability column is context, not a confidence interval.</li>
+
+  <li><strong>Every action is a look.</strong> No row in this queue carries a refresh action. The best measured lift any single pattern shows over the base rate is +0.0634. That does not justify telling an editor to change a page. Deciding to refresh stays a human decision made outside this artifact.</li>
+
+  <li><strong>Read the reason codes as descriptions, not diagnoses.</strong> All five say "these pages share a measured feature pattern." None says why the pattern exists, and none is a prediction. The five codes:
+    <ul>
+      <li><code>low_ctr_more_decline</code> — few people who see the page click it. Decline 0.5072 vs 0.3804. Action: <em>ctr_review</em> (a look).</li>
+      <li><code>high_volume_tilt</code> — a high-traffic page. Tilt +0.0191, small. Action: <em>monitor</em>.</li>
+      <li><code>poor_position_drift</code> — average position in the worse half. Action: <em>position_check</em> (is this a stable snapshot or a trend? — a question for a human).</li>
+      <li><code>low_activity_concentration</code> — indexed on ≤ 10 of 15 days. These pages declined <em>least</em> (0.1251). Action: <em>monitor_low_priority</em>. This code exists to retire the naive story and make the negative result visible in the queue itself.</li>
+      <li><code>no_measured_pattern</code> — nothing above fired. Explicitly low priority.</li>
+    </ul>
+  </li>
+
+  <li><strong>Watch the middle of the queue.</strong> The ordering does most of its work in the first two deciles and then coasts. Deciles 5 through 9 all land between 0.4952 and 0.5532 decline rate. If the editor only has time for 50 pages, the top of the queue is where the signal is; the middle is close to the base rate.</li>
+</ol>
+
+<h2 id="repro">7. Reproducibility</h2>
+
+<p>Everything needed to rerun or inspect the work is in this repo under <code>work/</code>.</p>
+
+<h3>Notebooks (in execution order)</h3>
+
+<table>
+  <tr><th>Notebook</th><th>What it does</th></tr>
+  <tr><td><code>work/notebooks/w01_research_question.ipynb</code></td><td>Frames the research question and the decision it supports</td></tr>
+  <tr><td><code>work/notebooks/w02_ml_task_framing.ipynb</code></td><td>Turns the question into a task type, target, and selection metric</td></tr>
+  <tr><td><code>work/notebooks/w03_data_contract.ipynb</code></td><td>Writes the data contract: units, windows, features, label, exclusions, verified with three queries on <code>month=2026-03</code></td></tr>
+  <tr><td><code>work/notebooks/w03_feature_leakage_check.ipynb</code></td><td>Deliberate leak test: one label-derived column → AUC 1.0, removed → 0.6262</td></tr>
+  <tr><td><code>work/notebooks/w04_signal_audit.ipynb</code></td><td>Standalone signal tests for each feature pattern</td></tr>
+  <tr><td><code>work/notebooks/w04_baseline_score.ipynb</code></td><td>Week-4 rule baseline, same grouped folds</td></tr>
+  <tr><td><code>work/notebooks/w05_model.ipynb</code></td><td>Logistic regression fit, feature importance</td></tr>
+  <tr><td><code>work/notebooks/w06_validation_audit.ipynb</code></td><td>GroupKFold(5) by client; out-of-fold AUC 0.5902, P@50 0.4800; leakage harness</td></tr>
+  <tr><td><code>work/notebooks/w07_action_playbook.ipynb</code></td><td>Ranked queue with reason codes and plain-language actions</td></tr>
+  <tr><td><code>work/notebooks/capstone.ipynb</code></td><td>Mirrors this paper: question → data → method → results → limits → recommendations → artifacts</td></tr>
+</table>
+
+<h3>Generated outputs</h3>
+
+<ul>
+  <li><code>outputs/model_results.json</code> — model comparison table, feature importance, queue metadata</li>
+  <li><code>outputs/model_report.md</code> — human-readable model report</li>
+  <li><code>outputs/refresh_queue_sample.csv</code> — top 200 of the ranked queue with scores, probabilities, reason codes, and actions</li>
+  <li><code>outputs/charts/</code> — SVG charts: top_feature_importance, trend_distribution, top_reason_codes, confidence_mix, action_mix</li>
+  <li><code>work/figures/queue_decline_profile.png</code> — Figure 1: decline rate by score decile</li>
+  <li><code>work/figures/reason_code_breakdown.png</code> — reason code standalone decline rates</li>
+</ul>
+
+<h3>How to rerun</h3>
+
+<pre>
+# 1. Download month=2026-03 from FlyRank/internship-warehouse
+#    into work/outputs/warehouse_cache/ (see skills/flyrank/flyrank-data)
+#    A READ token is never pasted in a cell.
+
+# 2. Run the pipeline scripts in order:
+python scripts/01_prepare_features.py
+python scripts/02_baseline_score.py
+python scripts/03_train_model.py
+python scripts/04_evaluate_and_export.py
+python scripts/05_build_pdf_report.py
+
+# 3. Or run the full notebook chain top to bottom:
+#    work/notebooks/capstone.ipynb
+</pre>
+
+<h3>Seeds and tie rule</h3>
+
+<p>The grouped folds use a fixed random seed for reproducibility. The tie rule for the ranked queue is: when two rows have the same score, rows are ordered by descending impressions, then by descending clicks — a fixed rule that makes the order repeat when another person runs the code.</p>
+
+<h3>The fair comparison contract</h3>
+
+<p>Model and baseline: same eligible rows (77,400 labeled pages), same client folds (GroupKFold 5), same metrics (AUC, P@50), same review depth K=50, same tie rule, base rate shown next to both. The baseline fits nothing — it is a fixed ordering rule.</p>
+
+<h2 id="ack">8. Acknowledgments &amp; data credit</h2>
+
+<p><strong>Built on the FlyRank ML Internship dataset.</strong></p>
+
+<p>The data behind this paper comes from the FlyRank ML Internship warehouse release — real production search performance data, pseudonymized for the internship program. Crediting the data source is standard research practice, and it tells readers the data is real.</p>
+
+<p><a href="https://flyrank.ai" target="_blank" rel="noopener">FlyRank AI</a> — the company behind the internship program and the data.</p>
+
+<p>The FlyRank Internship July 2026 Cohort and the mentors who reviewed the work, especially the ML track lead who framed the problem as "which pages deserve the first look" and the validation sessions that caught the client-memorization gap before it reached this paper.</p>
+
+<div class="footer">
+  <p><em>A model nobody acts on is a science project. Work that no one can see is a secret. This paper exists so a stranger can trust the work in ten minutes — and so the editor who uses the queue can see exactly what the model did and did not measure.</em></p>
+  <p>Paper source: <a href="https://github.com/FlyRank/internship-starter" target="_blank" rel="noopener">GitHub repository</a> · Published via GitHub Pages</p>
+</div>
+
+</body>
+</html>

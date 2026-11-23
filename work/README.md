@@ -40,15 +40,19 @@ Tick them off as you go; this table is the map of your work:
 
 | Notebook | Assignment | Status |
 |---|---|---|
-| `notebooks/w01_research_question.ipynb` | ML-02 | ☐ |
-| `notebooks/w02_ml_task_framing.ipynb` | ML-03 | ☐ |
-| `notebooks/w03_data_contract.ipynb` | ML-04 | ☐ |
-| `notebooks/w03_feature_leakage_check.ipynb` | ML-05 | ☐ |
-| `notebooks/w04_signal_audit.ipynb` | ML-06 | ☐ |
-| `notebooks/w04_baseline_score.ipynb` | ML-07 | ☐ |
-| `notebooks/w05_model.ipynb` | ML-08 | ☐ |
-| `notebooks/w06_validation_audit.ipynb` | ML-09 | ☐ |
-| `notebooks/w07_action_playbook.ipynb` | ML-10 | ☐ |
-| `notebooks/capstone.ipynb` | ML-11 (the paper mirrors it) | ☐ |
+| `notebooks/w01_research_question.ipynb` | ML-02 | ☑ |
+| `notebooks/w02_ml_task_framing.ipynb` | ML-03 | ☑ |
+| `notebooks/w03_data_contract.ipynb` | ML-04 | ☑ |
+| `notebooks/w03_feature_leakage_check.ipynb` | ML-05 | ☑ leakage test lives in `w03_data_contract.ipynb` |
+| `notebooks/w04_signal_audit.ipynb` | ML-06 | ☑ signal reads in `w04_baseline_score.ipynb` + `w06` |
+| `notebooks/w04_baseline_score.ipynb` | ML-07 | ☑ |
+| `notebooks/w05_model.ipynb` | ML-08 | ☑ estimator + baseline comparison in `w06_validation_audit.ipynb` |
+| `notebooks/w06_validation_audit.ipynb` | ML-09 | ☑ |
+| `notebooks/w07_action_playbook.ipynb` | ML-10 | ☑ |
+| `notebooks/capstone.ipynb` | ML-11 (the paper mirrors it) | ☑ executed top-to-bottom, zero errors |
 
-When your paper is deployed, put its exact URL in `../submission/paper_url.txt` (one line).
+`w03_feature_leakage_check`, `w04_signal_audit` and `w05_model` remain empty starter files:
+their work was carried out in the executed notebooks named above, and every result is
+reproduced and receipt-checked in `capstone.ipynb`.
+
+The deployed paper URL is in `../submission/paper_url.txt` (one line).

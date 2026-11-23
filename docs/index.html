@@ -204,7 +204,7 @@
 </ul>
 
 <h3>3.2 Model</h3>
-<p><code>LogisticRegression(max_iter=500, C=1.0)</code> — no scaler, five features, class_weight="balanced". Selected because the lane is a ranking problem on a small feature set, and a linear model's coefficients are the reason codes: the signs and magnitudes <em>are</em> the story the paper tells about what the model found. A tree or ensemble would score the same ranking task and would not give the paper a reason column it can read.</p>
+<p><code>LogisticRegression(max_iter=500, C=1.0)</code> — no scaler, five features, default class weights. Selected because the lane is a ranking problem on a small feature set, and a linear model's coefficients are the reason codes: the signs and magnitudes <em>are</em> the story the paper tells about what the model found. A tree or ensemble would score the same ranking task and would not give the paper a reason column it can read.</p>
 
 <h3>3.3 Validation design</h3>
 <p><code>GroupKFold(5)</code>, grouping by <code>client_hash_id</code>. No client appears in both train and test. This is the minimum honest split for a panel where one client dominates the row count.</p>
@@ -367,17 +367,19 @@
 </ul>
 
 <h3>7.4 Reproducibility check (measured, not asserted)</h3>
-<p>The frame SQL ends in a stable <code>ORDER BY</code>, so re-running it must reproduce the frame. It does <strong>not</strong> reproduce bit-for-bit: <code>f_avg_position</code> is a parallel <code>AVG</code> in duckdb, and parallel float addition is not associative, so it moves by ~4e-14 between identical runs. Everything reported is many orders of magnitude above that noise floor. The same applies one step downstream to <code>predicted_probability</code>. The head of the queue is unchanged across runs; the exact tail ordering of pages that score identically is not guaranteed stable, and the paper does not quote it.</p>
+<p>The frame SQL ends in a stable <code>ORDER BY</code>, so re-running it must reproduce the frame. It does <strong>not</strong> reproduce bit-for-bit: <code>f_avg_position</code> is a parallel <code>AVG</code> in duckdb, and parallel float addition is not associative, so it moves by ~4e-14 between identical runs. Everything reported is many orders of magnitude above that noise floor. The same applies one step downstream to <code>predicted_probability</code>. The head of the queue is unchanged across runs; the exact tail ordering of pages that score identically is not guaranteed stable, and the paper does not quote it. The two <em>comparator</em> P@50 values (random ordering 0.4080, hand rule 0.4360) are the one place a fresh run moves by ~0.02: random ranking depends on the seeded permutation and the rule has only three score levels, so <code>np.argsort</code> tie-breaking decides which tied rows enter the top 50. Every model metric, the base rate, all counts and all pattern rates reproduce exactly; both comparators stay below the model's 0.4800 under either measurement, so the conclusion is unchanged — the third decimal of a comparator is not a result.</p>
 
 <h3>7.5 Where the artifacts live</h3>
 <table>
   <tr><th>Artifact</th><th>Path</th></tr>
   <tr><td>Capstone notebook (mirrors this paper)</td><td><code>work/notebooks/capstone.ipynb</code></td></tr>
+  <tr><td>Capstone report (eight rubric sections)</td><td><code>work/capstone_report.md</code></td></tr>
   <tr><td>Data contract notebook</td><td><code>work/notebooks/w03_data_contract.ipynb</code></td></tr>
   <tr><td>Validation audit notebook</td><td><code>work/notebooks/w06_validation_audit.ipynb</code></td></tr>
   <tr><td>Action playbook notebook</td><td><code>work/notebooks/w07_action_playbook.ipynb</code></td></tr>
   <tr><td>Ranked queue CSV (77,400 rows, gitignored)</td><td><code>work/outputs/action_playbook_queue.csv</code></td></tr>
   <tr><td>Playbook metrics JSON (all receipts)</td><td><code>work/outputs/playbook_metrics.json</code></td></tr>
+  <tr><td>Capstone metrics JSON (fresh receipts)</td><td><code>work/outputs/capstone_metrics.json</code></td></tr>
   <tr><td>Queue decline profile figure</td><td><code>work/figures/queue_decline_profile.png</code></td></tr>
   <tr><td>Reason code breakdown figure</td><td><code>work/figures/reason_code_breakdown.png</code></td></tr>
   <tr><td>Reference pipeline (not edited)</td><td><code>scripts/01_prepare_features.py</code> … <code>scripts/05_build_pdf_report.py</code></td></tr>

@@ -1,0 +1,38 @@
+{
+  "base_rate": 0.4438,
+  "grouped_auc": 0.5902,
+  "grouped_p_at_50": 0.48,
+  "grouped_p_at_50_random_ranking": 0.432,
+  "random_auc": 0.6262,
+  "random_p_at_50": 0.56,
+  "rule_p_at_50": 0.452,
+  "n_labeled": 77400,
+  "n_frame_rows": 151981,
+  "n_clients": 38,
+  "decision_date": "2026-03-15",
+  "feature_window": "2026-03-01..2026-03-15",
+  "outcome_window": "2026-03-16..2026-03-31",
+  "model_type": "LogisticRegression(max_iter=500, C=1.0), no scaler, 5 features",
+  "split": "GroupKFold(5) by client_hash_id; random row split quoted for contrast only",
+  "reason_code_counts": {
+    "low_ctr_more_decline": 38695,
+    "high_volume_tilt": 16562,
+    "no_measured_pattern": 10462,
+    "poor_position_drift": 9978,
+    "low_activity_concentration": 1703
+  },
+  "ctr_split_decline": {
+    "below_median": 0.5072,
+    "above_median": 0.3804
+  },
+  "activity_decline": {
+    "le_10_days": 0.1251,
+    "15_of_15_days": 0.4948
+  },
+  "age_oldest_quartile_decline": 0.3707,
+  "healthy_looking": {
+    "n": 15736,
+    "decline_rate": 0.3479
+  },
+  "source": "re-measured in work/notebooks/capstone.ipynb from the local warehouse cache"
+}

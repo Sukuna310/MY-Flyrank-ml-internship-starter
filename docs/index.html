@@ -113,8 +113,8 @@
   <p><strong>Question:</strong> A content team managing thousands of pages across dozens of clients has one editor who can review only a handful of pages per cycle — and no defensible order for which ones to look at first.</p>
   <p><strong>Data:</strong> 151,981 page-level rows from the FlyRank internship warehouse (<code>month=2026-03</code>), rolled up from 9,841,378 daily Search Console observations across 38 pseudonymized clients, with 77,400 pages earning a label after requiring at least 100 first-half impressions.</p>
   <p><strong>Method:</strong> Five features from the first half of March 2026 (log impressions, CTR, average position, active days, log age) feed a logistic regression; the label is whether a page's second-half impressions fell below its first-half impressions — a within-month proxy, not a forecast. Validation uses <code>GroupKFold(5)</code> by client so no client appears in both train and test.</p>
-  <p><strong>Result:</strong> The model clears random ranking modestly — grouped AUC 0.5902 vs 0.5000, grouped P@50 0.4800 vs 0.4080 for random ordering — and does <em>not</em> separate from the hand-written rule baseline at P@50 (0.4360, same folds); the only measured pattern that clears the base rate is low CTR (decline 0.5072 below median vs 0.3804 above).</p>
-  <p><strong>Use:</strong> The output is a reading order with per-page reason codes, not an automation. No refresh action is assigned anywhere in the queue, because the best measured lift any pattern shows over the 0.4438 base rate is +0.0634 — not enough to tell an editor to change a page.</p>
+  <p><strong>Result:</strong> The model clears random ranking modestly — grouped AUC 0.5902 vs 0.5000, grouped P@50 0.4800 vs 0.4080 for random ordering — and does <em>not</em> separate from the hand-written rule baseline at P@50 (0.4360, same folds); the only reason-code group that clears the base rate after the priority contest is low CTR (decline 0.5072 below median vs 0.3804 above).</p>
+  <p><strong>Use:</strong> The output is a reading order with per-page reason codes, not an automation. No refresh action is assigned anywhere in the queue, because the best lift among the queue's reason-code patterns over the 0.4438 base rate is +0.0634 — not enough to tell an editor to change a page.</p>
 </div>
 
 <p class="tags">
@@ -165,7 +165,7 @@
 
 <h3>2.3 The label</h3>
 
-<p><code>is_visibility_loss = 1</code> when a page's second-half March impressions are below its first-half March impressions — computed only for pages with ≥ 100 first-half impressions, so tiny pages don't set the label. This is an honest <strong>within-month proxy</strong> for "this page is losing search visibility." It is measured from the outcome window, which is never used as a feature.</p>
+<p><code>is_visibility_loss = 1</code> when a page's second-half March impressions are below its first-half March impressions — computed only for pages with ≥ 100 first-half impressions, so tiny pages don't set the label. This is an honest <strong>within-month proxy</strong> for "this page is losing search visibility." It is measured from the outcome window, which is never used as a feature. One further exclusion is disclosed rather than hidden: 140 pages met the 100-impression threshold but had no outcome-window row, so they are unlabeled (77,540 eligible → 77,400 labeled). The labeled set therefore conditions on being observed after the decision date; this affects fewer than 0.2% of eligible pages and is inherited from the w03/w06/w07 frame.</p>
 
 <div class="note">
   <strong>Important limitation, stated up front:</strong> The label compares two halves of the same month. It is a <em>within-month</em> proxy, not a true future-window label. It says nothing yet about whether today's features predict <em>next month's</em> decline. A proper future-window label (prior → future) would be the next step; this paper reports the within-month result honestly and does not dress it up as forecasting.
@@ -210,9 +210,9 @@
 <p><code>GroupKFold(5)</code>, grouping by <code>client_hash_id</code>. No client appears in both train and test. This is the minimum honest split for a panel where one client dominates the row count.</p>
 
 <table>
-  <tr><th>Split</th><th>AUC</th><th>P@50 (model)</th><th>P@50 (random ranking)</th><th>Notes</th></tr>
-  <tr><td>Grouped by client (<code>GroupKFold(5)</code>)</td><td class="number">0.5902</td><td class="number">0.4800</td><td class="number">0.4080</td><td>Folds: 0.4666–0.6547, SD 0.0646. One fold is below chance. Quoted everywhere.</td></tr>
-  <tr><td>Random row split (seeded shuffle)</td><td class="number">0.6262</td><td class="number">0.5600</td><td class="number">—</td><td>Quoted as contrast only. 0.036 of the grouped gap is client memorization, not generalization.</td></tr>
+  <tr><th>Split</th><th>AUC</th><th>P@50 (model)</th><th>P@50 (random ranking)</th><th>Base rate</th><th>Notes</th></tr>
+  <tr><td>Grouped by client (<code>GroupKFold(5)</code>)</td><td class="number">0.5902</td><td class="number">0.4800</td><td class="number">0.4080</td><td class="number">0.4438</td><td>Folds: 0.4666–0.6547, SD 0.0646. One fold is below chance. Quoted everywhere.</td></tr>
+  <tr><td>Random row split (seeded shuffle)</td><td class="number">0.6262</td><td class="number">0.5600</td><td class="number">—</td><td class="number">0.4438</td><td>Quoted as contrast only. 0.036 of the grouped gap is client memorization, not generalization.</td></tr>
 </table>
 
 <div class="note">
@@ -230,10 +230,10 @@
   <tr><td>After removal</td><td>5 features only (leak column deleted)</td><td class="number">0.6262</td><td>The honest number survives. The leak column is gone from every final feature list.</td></tr>
 </table>
 
-<p><code>trend_direction</code> and <code>trend_pct</code> are absent from the model matrix. The label is defined from the outcome window, and no column that touches the outcome window is used as a feature. The leak test proves the check can fail; the clean run is the only result the paper quotes.</p>
+<p><code>trend_direction</code> and <code>trend_pct</code> are absent from the model matrix. The label is defined from the outcome window, and no column that touches the outcome window is used as a feature. The leak test shows the check catches a label-derived column; the clean run is the only result the paper quotes.</p>
 
 <h3>3.5 Baseline</h3>
-<p>A hand-written rule from Week 4, built before any model was trained. It uses only feature-window columns — no label input. The rule scores P@50 <strong>0.4360</strong> on the same grouped folds (fold range 0.20–0.58). The baseline is a comparator, never a feature; the gap between the model and the rule is reported in §4 with the rule's fold spread attached.</p>
+<p>A hand-written rule from Week 4, built before any model was trained. It uses only feature-window columns — no label input. The rule scores P@50 <strong>0.4360</strong> on the same grouped folds (base rate 0.4438; fold range 0.20–0.58 in the recorded run). The baseline is a comparator, never a feature; the gap between the model and the rule is reported in §4 with the rule's fold spread attached.</p>
 
 <h3>3.6 Final feature list</h3>
 <p>Five features, unchanged from w03: <code>f_log_impressions</code>, <code>f_ctr</code>, <code>f_avg_position</code>, <code>f_active_days</code>, <code>f_log_age_days</code>. Every number in the paper traces back to this list. The feature list is the same in the data section, the methodology, the result caption, and the reproducibility notes — one list, not four.</p>
@@ -250,7 +250,7 @@
   <tr><td>Logistic regression (this work)</td><td>Grouped, same folds</td><td class="number">0.5902</td><td class="number">0.4800</td><td class="number">0.4438</td></tr>
 </table>
 
-<p>The model clears random ranking on both metrics. The gap over the rule is +0.0440 at P@50 — but the rule's own per-fold values swing from 0.20 to 0.58, so that gap sits inside the rule's fold-to-fold noise. The comparison is reported as <strong>unseparated</strong>, not a win. A 0.0440 difference on a metric whose baseline moves 0.38 between folds is not a result, and the paper does not claim it is.</p>
+<p>The model clears random ranking on both metrics. In the recorded run quoted in this table, the gap over the rule is +0.0440 at P@50 — but the rule's own per-fold values swing from 0.20 to 0.58, so that gap sits inside the rule's fold-to-fold noise. A fresh run moves these comparator-derived numbers to +0.0280 and 0.20–0.60 (§7.4); the conclusion is the same either way. The comparison is reported as <strong>unseparated</strong>, not a win. A 0.0440 difference on a metric whose baseline moves 0.38 between folds is not a result, and the paper does not claim it is.</p>
 
 <div class="fig">
   <img src="figures/queue_decline_profile.png" alt="Decline rate by score decile, with base rate reference line">
@@ -259,7 +259,7 @@
 
 <div class="fig">
   <img src="figures/reason_code_breakdown.png" alt="Reason code share of queue and measured decline rate">
-  <div class="caption">Figure 2 — Two panels: (left) share of the 77,400-row queue each reason code holds; (right) measured decline rate of the pages each code filed, against the base rate line (0.4438). Blue bars are above the base rate; grey bars are at or below it. Four of the five codes land at or below the base rate after the priority contest — that is the honest half of the figure, not a defect. Only <code>low_ctr_more_decline</code> files a group above the base rate.</div>
+  <div class="caption">Figure 2 — Two panels: (left) share of the 77,400-row queue each reason code holds; (right) measured decline rate of the pages each code filed, against the base rate line (0.4438). Blue bars are above the base rate; grey bars are at or below it. Four of the five codes land at or below the base rate after the priority contest — that is the honest half of the figure, not a defect. Only <code>low_ctr_more_decline</code> files a group above the base rate. These are descriptive rates on all labeled rows, and the queue scores come from a full-frame in-sample fit — this figure makes no out-of-fold claim.</div>
 </div>
 
 <h3>4.2 What the model actually found</h3>
@@ -274,7 +274,7 @@
 
 <h3>4.3 No pattern clears the bar for an automated action</h3>
 
-<p>The best measured lift any single pattern shows over the base rate is <strong>+0.0634</strong> (<code>low_ctr_more_decline</code>, on a label whose own base rate is 0.4438). That is not enough evidence to tell an editor to change a page. So no reason code in the shipped queue is assigned a refresh action, and the whole queue is a reading order. Every action below is a <em>look</em>; deciding to refresh stays a human decision made outside this artifact.</p>
+<p>The best lift among the queue's reason-code patterns over the base rate is <strong>+0.0634</strong> (<code>low_ctr_more_decline</code>, on a label whose own base rate is 0.4438). That is not enough evidence to tell an editor to change a page. So no reason code in the shipped queue is assigned a refresh action, and the whole queue is a reading order. Every action below is a <em>look</em>; deciding to refresh stays a human decision made outside this artifact.</p>
 
 <table>
   <tr><th>Reason code</th><th>Feature pattern</th><th>Standalone decline rate</th><th>Lift vs base rate</th><th>Action assigned</th></tr>
@@ -295,14 +295,14 @@
   <li><strong>The label is a within-month proxy, not future decline.</strong> "Second-half impressions below first-half impressions" is a within-month comparison on already-visible pages. A page can dip for reasons that have nothing to do with content quality, and the label never sees anything after 2026-03-31. The score orders that population; it does not forecast.</li>
   <li><strong>The label only exists for pages with ≥ 100 first-half impressions</strong> — 77,400 of 151,981 rows (50.9%). The base rate 0.4438 describes high-traffic pages only. The 74,581 unlabeled frame rows are systematically thinner (median active days 6 vs 15 for labeled), so nothing here should be read onto low-traffic pages.</li>
   <li><strong>38 clients, very unevenly sized</strong> (median 485 rows, max 17,610). The queue is dominated by a handful of large clients, and a per-client view would look different from a pooled one.</li>
-  <li><strong>Grouped AUC 0.5902 is modest.</strong> Above random ranking (0.5000) and above a random-order P@50 (0.4080 at P@50 0.4800), but far from a model that separates. One grouped fold lands at 0.4666, below chance.</li>
+  <li><strong>Grouped AUC 0.5902 is modest.</strong> Above random ranking (0.5000) and above a random-order P@50 (0.4080 recorded, 0.4320 fresh) at model P@50 0.4800, on a base rate of 0.4438 — but far from a model that separates. One grouped fold lands at 0.4666, below chance.</li>
   <li><strong>No time-aware split exists.</strong> Every row shares one decision date, so "does this hold next month?" is untested here. This is the largest untested assumption in the design — a monitoring plan is offered in lieu of a validation result.</li>
   <li><strong>The label's own selection is the biggest caveat.</strong> A within-month, within-page comparison on already-visible pages is a narrow question. The queue should be read as "where to look inside the pages that were already getting impressions," never as "which pages are at risk."</li>
-  <li><strong>The model does not beat the rule.</strong> Grouped P@50 0.4800 vs the Week-4 rule's 0.4360 sits inside that rule's own 0.20–0.58 fold spread. Unseparated, not a win.</li>
+  <li><strong>The model does not beat the rule.</strong> Grouped P@50 0.4800 vs the Week-4 rule's 0.4360 (base rate 0.4438) sits inside that rule's own 0.20–0.58 fold spread. Unseparated, not a win.</li>
 </ol>
 
 <div class="note">
-  <strong>Words this paper uses:</strong> observed, measured, directional, decision-support, associated with. <strong>Words this paper does not use:</strong> predicts, causes, will decline, identifies, finds the pages that are losing visibility, proves. The score is a ranking with a measured but modest lift; the reason codes are descriptions of feature patterns, not diagnoses.
+  <strong>Words this paper uses:</strong> observed, measured, directional, decision-support, associated with. Causal and forecast words appear only inside negations and no-go statements — never as a claim about a page. The score is a ranking with a measured but modest lift; the reason codes are descriptions of feature patterns, not diagnoses.
 </div>
 
 <!-- ── 6. Ranked recommendations ── -->
@@ -346,28 +346,28 @@
 <h3>7.1 How to re-run</h3>
 <ul>
   <li><strong>Clone the repo:</strong> <code>https://github.com/Sukuna310/MY-Flyrank-ml-internship-starter</code></li>
-  <li><strong>Data:</strong> The warehouse slice is cached locally at <code>work/outputs/warehouse_cache/</code> (<code>fact_2026-03.parquet</code> + <code>dim_content.parquet</code>). The notebooks read from that cache; they do not download from HuggingFace at run time. To refresh the cache, follow the access steps in <code>skills/flyrank/flyrank-data</code> (request access to <code>FlyRank/internship-warehouse</code> on HuggingFace, accept the data-use terms).</li>
-  <li><strong>Run the capstone notebook:</strong> <code>work/notebooks/capstone.ipynb</code> — re-runs the frame SQL, re-fits the model, re-derives the reason codes, and re-checks reproducibility. Open in Colab (badge at the top of the notebook) or locally with <code>jupyter nbconvert --to html --execute work/notebooks/capstone.ipynb</code>.</li>
+  <li><strong>Data:</strong> The warehouse slice is cached locally at <code>work/outputs/warehouse_cache/</code> — three gitignored parquet files: <code>fact_2026-03.parquet</code>, <code>dim_content.parquet</code> and <code>dim_clients.parquet</code>. The notebooks read from that cache; they do not download at run time. A fresh clone must request access to the gated <code>FlyRank/internship-warehouse</code> dataset, accept the data-use terms, and export the mid-panel month <code>2026-03</code> plus the two dimensions to those exact filenames (access rules in <code>skills/flyrank/flyrank-data</code>; the token stays in an environment variable or Colab Secret, never in a cell).</li>
+  <li><strong>Run the capstone notebook:</strong> <code>work/notebooks/capstone.ipynb</code> — re-runs the frame SQL, re-fits the model, re-derives the reason codes, and re-checks reproducibility. Run locally from the repo root or <code>work/notebooks</code> (the notebook locates the repo by walking up for <code>AGENTS.md</code>) with <code>jupyter nbconvert --to notebook --execute --inplace work/notebooks/capstone.ipynb</code>.</li>
   <li><strong>The playbook numbers are re-measured, not copied:</strong> <code>work/notebooks/w07_action_playbook.ipynb</code> re-runs the frame SQL and re-verifies every metric against w06 out-of-fold. The receipt table in §5 of that notebook reports match/no-match for each number.</li>
 </ul>
 
 <h3>7.2 Random seeds</h3>
 <ul>
-  <li>Model: <code>RANDOM_STATE = 42</code> (logistic regression, decision tree, random forest in the pipeline).</li>
-  <li>Grouped split: client permutation uses <code>np.random.default_rng(42)</code>.</li>
-  <li>Validation folds: <code>GroupKFold(5)</code> — deterministic given the group labels, no shuffle seed needed.</li>
-  <li>Permutation importance: default <code>n_repeats=5</code>, no custom seed (the SDs reported are from those repeats).</li>
+  <li>Random row split (contrast only): <code>StratifiedKFold(3, shuffle=True, random_state=0)</code>.</li>
+  <li>Random-ordering reference: <code>np.random.RandomState(0).permutation(...)</code> in each fold.</li>
+  <li>Validation folds: <code>GroupKFold(5)</code> by <code>client_hash_id</code> — deterministic given the group labels and row order, no shuffle seed needed. The estimator has no <code>random_state</code> (LBFGS is deterministic here).</li>
+  <li>The <code>RANDOM_STATE = 42</code> value and the tree/forest models belong to the unedited reference pipeline in <code>scripts/</code>, not to this capstone. Permutation-importance SDs quoted in §4.2 are recorded from w06's grouped-fold audit, not re-derived by the capstone.</li>
 </ul>
 
 <h3>7.3 Environment</h3>
 <ul>
-  <li>Python 3 (see <code>requirements.txt</code> at repo root for pinned packages).</li>
+  <li>Python 3 (see <code>requirements.txt</code> at repo root for dependency floors — the executed run used pandas 3.0.5, numpy 2.5.2, scikit-learn 1.9.0, duckdb 1.5.5; the capstone prints its exact versions in the setup cell).</li>
   <li>Key deps: <code>pandas</code>, <code>numpy</code>, <code>scikit-learn</code>, <code>duckdb</code>, <code>matplotlib</code>.</li>
   <li>The pipeline scripts in <code>scripts/</code> (01–05) are the reference run; they are not edited. The work notebooks in <code>work/notebooks/</code> are the capstone artifacts.</li>
 </ul>
 
 <h3>7.4 Reproducibility check (measured, not asserted)</h3>
-<p>The frame SQL ends in a stable <code>ORDER BY</code>, so re-running it must reproduce the frame. It does <strong>not</strong> reproduce bit-for-bit: <code>f_avg_position</code> is a parallel <code>AVG</code> in duckdb, and parallel float addition is not associative, so it moves by ~4e-14 between identical runs. Everything reported is many orders of magnitude above that noise floor. The same applies one step downstream to <code>predicted_probability</code>. The head of the queue is unchanged across runs; the exact tail ordering of pages that score identically is not guaranteed stable, and the paper does not quote it. The two <em>comparator</em> P@50 values (random ordering 0.4080, hand rule 0.4360) are the one place a fresh run moves by ~0.02: random ranking depends on the seeded permutation and the rule has only three score levels, so <code>np.argsort</code> tie-breaking decides which tied rows enter the top 50. Every model metric, the base rate, all counts and all pattern rates reproduce exactly; both comparators stay below the model's 0.4800 under either measurement, so the conclusion is unchanged — the third decimal of a comparator is not a result.</p>
+<p>The frame SQL ends in a stable <code>ORDER BY</code>, so re-running it must reproduce the frame. It does <strong>not</strong> reproduce bit-for-bit: <code>f_avg_position</code> is a parallel <code>AVG</code> in duckdb, and parallel float addition is not associative, so it moves by ~4e-14 between identical runs. Everything reported is many orders of magnitude above that noise floor. The same applies one step downstream to <code>predicted_probability</code>. The head of the queue is unchanged across runs; the exact tail ordering of pages that score identically is not guaranteed stable, and the paper does not quote it. The two <em>comparator</em> P@50 values and the numbers derived from them are the one place a fresh run moves: random ordering 0.4080 recorded / 0.4320 fresh, hand rule 0.4360 / 0.4520, the rule's fold top 0.58 / 0.60, and the model-minus-rule gap +0.0440 / +0.0280 — a spread of up to 0.0240. Random ranking depends on the seeded permutation and the rule has only three score levels, so <code>np.argsort</code> tie-breaking decides which tied rows enter the top 50. Every model metric, the base rate, all counts and all pattern rates reproduce exactly; both comparators stay below the model's 0.4800 under either measurement, so the conclusion is unchanged — the third decimal of a comparator is not a result.</p>
 
 <h3>7.5 Where the artifacts live</h3>
 <table>
@@ -396,7 +396,7 @@
 
   <p>Warehouse: <a href="https://huggingface.co/datasets/FlyRank/internship-warehouse" target="_blank" rel="noopener">FlyRank/internship-warehouse</a> (gated: request access + accept the data-use terms; approval is instant).</p>
 
-  <p>The labeled frame, the model, the reason codes, and every number in this paper were produced by the author from that warehouse slice using the open-source pipeline in this repo. No client names, URLs, or private queries appear anywhere in this paper — only pseudonymized hash IDs and aggregate counts.</p>
+  <p>The labeled frame, the model, the reason codes, and every number in this paper were produced by the author from that warehouse slice using the open-source pipeline in this repo. No client names, client domains/URLs, or private queries appear anywhere in this paper — only pseudonymized hash IDs and aggregate counts.</p>
 
   <p>Thanks to the FlyRank ML internship track (Cohort 1, July 2026) for the data, the sessions, and the paper-clinic feedback that shaped the final structure.</p>
 </div>
@@ -406,7 +406,7 @@
 <ul class="checklist">
   <li>Every section above is filled — markdown thinking <em>and</em> the code that backs it.</li>
   <li>The notebook runs top to bottom with no errors (Runtime → Run all).</li>
-  <li>No client names, URLs, or private queries anywhere — only pseudonymized hashes.</li>
+  <li>No client names, client domains/URLs, or private queries anywhere — only pseudonymized hashes.</li>
   <li>My claims use careful words: observed, measured, directional, decision-support.</li>
   <li>The abstract is at the top; the data credit with the flyrank.ai link is at the bottom.</li>
   <li>The baseline, validation, interpretation, ranked recommendations, and honest claim language are all present.</li>

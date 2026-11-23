@@ -14,6 +14,8 @@
   "outcome_window": "2026-03-16..2026-03-31",
   "model_type": "LogisticRegression(max_iter=500, C=1.0), no scaler, 5 features",
   "split": "GroupKFold(5) by client_hash_id; random row split quoted for contrast only",
+  "queue_score": "predicted_probability from a full-frame fit - in-sample; ranking quality is only ever quoted out-of-fold",
+  "queue_label": "is_visibility_loss is the March within-month outcome, exported for read-off only - not a future prediction",
   "reason_code_counts": {
     "low_ctr_more_decline": 38695,
     "high_volume_tilt": 16562,
